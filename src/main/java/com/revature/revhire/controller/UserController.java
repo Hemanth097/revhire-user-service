@@ -1,5 +1,8 @@
 package com.revature.revhire.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,37 +22,31 @@ import com.revature.revhire.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import com.revature.revhire.dto.LoginCredentials;
 import com.revature.revhire.dto.UserRequest;
 import com.revature.revhire.dto.UserResponse;
 
 @RestController
+@Slf4j
 @AllArgsConstructor
 @RequestMapping("/")
-@Slf4j
 @CrossOrigin(origins = "*")
 public class UserController {
-	
-	
 
 	private final UserService userService;
-	private static final Logger log = LoggerFactory.getLogger(UserController.class);
-	
-	
+	private static final Logger logInfo = LoggerFactory.getLogger(UserController.class);
 
 	@PostMapping(path = "signup")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public UserResponse createUser(@RequestBody UserRequest userRequest) {
 
 		try {
+			logInfo.debug("created user");
 			
 			return userService.createUser(userRequest);
 
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			logInfo.error(e.getMessage());
 
 			throw new HttpClientErrorException(HttpStatusCode.valueOf(500), "Unable to create the user");
 		}
@@ -63,7 +60,7 @@ public class UserController {
 			return userService.authenticateUser(loginCredenials);
 		}
 	 catch (Exception e) {
-		 log.error(e.getMessage());
+			logInfo.error(e.getMessage());
 		throw new HttpClientErrorException(HttpStatusCode.valueOf(401), "Wrong email Id or password");
 		 
 	}
@@ -74,10 +71,11 @@ public class UserController {
 	@ResponseStatus(code = HttpStatus.ACCEPTED)
 	public UserResponse updateateUser(@RequestBody UserRequest userRequest, @PathVariable long id) {
 		try {
+			logInfo.debug("updated user");
 			return userService.updateUser(userRequest, id);
 		}
 	 catch (Exception e) {
-		 log.error(e.getMessage());
+			logInfo.error(e.getMessage());
 		throw new HttpClientErrorException(HttpStatusCode.valueOf(500), "Unable to update profile");
 		 
 	}
@@ -88,10 +86,13 @@ public class UserController {
 	@ResponseStatus(code = HttpStatus.OK)
 	public UserResponse getUser(@PathVariable long id) {
 		try {
+			MDC.put("userId", String.valueOf(id));
+			logInfo.debug("retreived user");
+
 			return userService.getUser(id);
 		}
 	 catch (Exception e) {
-		 log.error(e.getMessage());
+			logInfo.error(e.getMessage());
 		throw new HttpClientErrorException(HttpStatusCode.valueOf(500), "Unable to get user information");
 		 
 	}
@@ -113,7 +114,7 @@ public class UserController {
 			}
 		}
 	 catch (Exception e) {
-		 log.error(e.getMessage());
+			logInfo.error(e.getMessage());
 		throw new HttpClientErrorException(HttpStatusCode.valueOf(401), "Unable to delete profile");
 		 
 	}
